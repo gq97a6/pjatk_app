@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/FirstFragment"
-        android:name="gq97a6.pjatk.app.FirstFragment"
+        android:name="gq97a6.pjatk.app.fragments.MainScreenFragment"
         android:label="@string/first_fragment_label"
         tools:layout="@layout/fragment_first">
 
