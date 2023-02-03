@@ -1,15 +1,15 @@
-package gq97a6.pjatk.app.fragments
+package gq97a6.pjatk.app.activities.fragments
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.commit
-import gq97a6.pjatk.app.MainActivity
 import gq97a6.pjatk.app.R
+import gq97a6.pjatk.app.activities.MainActivity
 
 
 class FragmentManager(private val mainActivity: MainActivity) {
-    private var backstack = mutableListOf<Fragment>(MainScreenFragment())
-    private var currentFragment: Fragment = MainScreenFragment()
+    private var backstack = mutableListOf<Fragment>()
+    private var currentFragment: Fragment = TimetableFragment()
 
     companion object Animations {
         val swap: (FragmentTransaction) -> Unit = {
