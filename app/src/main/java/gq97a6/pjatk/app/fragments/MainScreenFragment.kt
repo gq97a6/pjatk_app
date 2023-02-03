@@ -75,10 +75,9 @@ class MainScreenFragment : Fragment() {
                                 hasLogin = true
                                 //GlobalScope.launch { html = Fetcher.fetch(login, pass) }
                                 GlobalScope.launch {
+                                    val courses = Fetcher.fetch("", "", 2)
                                     html = ""
-                                    Fetcher.fetch("X", "X").forEach {
-                                        html += it.toString() + "\n\n"
-                                    }
+                                    courses.forEach { html += it.toString() + "\n\n" }
                                 }
                             },
                             Modifier

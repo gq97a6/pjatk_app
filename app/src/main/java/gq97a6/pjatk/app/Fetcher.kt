@@ -3,36 +3,36 @@ package gq97a6.pjatk.app
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
-import java.text.SimpleDateFormat
-import java.util.*
+import org.jsoup.nodes.Element
 
 object Fetcher {
-    fun fetch(login: String, pass: String): List<Course> {
-        //Get headers
-        var response = Jsoup
-            .connect("https://planzajec.pjwstk.edu.pl/Logowanie.aspx")
+    private const val href = "https://planzajec.pjwstk.edu.pl"
+
+    fun fetch(login: String, pass: String, weeks: Int = 1): List<Course> {
+        //Get necessary body values
+        val html = Jsoup
+            .connect("$href/Logowanie.aspx")
             .method(Connection.Method.GET)
             .execute()
+            .parse()
 
-        var responseDocument = response.parse()
-
-        val eventValidation = responseDocument
+        val eventValidation = html
             .select("input[name=__EVENTVALIDATION]")
             .first()
             .attr("value")
 
-        var viewState = responseDocument
+        val viewState = html
             .select("input[name=__VIEWSTATE]")
             .first()
             .attr("value")
 
-        val viewStateGen = responseDocument
+        val viewStateGen = html
             .select("input[name=__VIEWSTATEGENERATOR]")
             .first()
             .attr("value")
 
         //Get cookies
-        response = Jsoup.connect("https://planzajec.pjwstk.edu.pl/Logowanie.aspx")
+        val cookies = Jsoup.connect("$href/Logowanie.aspx")
             .method(Connection.Method.POST)
             .data("__VIEWSTATE", viewState)
             .data("__VIEWSTATEGENERATOR", viewStateGen)
@@ -41,67 +41,109 @@ object Fetcher {
             .data("ctl00\$ContentPlaceHolder1\$Login1\$Password", pass)
             .data("ctl00\$ContentPlaceHolder1\$Login1\$LoginButton", "Zaloguj")
             .execute()
+            .cookies()
 
-        val cookies = response.cookies()
+        return getCourses(cookies, weeks)
+    }
 
-        //Get timetable
-        val html: Document = Jsoup
-            .connect("https://planzajec.pjwstk.edu.pl/TwojPlan.aspx")
-            .cookies(cookies)
-            .get()
+    private fun getCourses(cookies: Map<String, String>, weeks: Int): List<Course> {
+        val courses: MutableList<Course> = mutableListOf()
+        var viewState = ""
 
-        val titles = html
-            .getElementById("ctl00_ContentPlaceHolder1_DedykowanyPlanStudenta_PlanZajecRadScheduler")
-            .getElementsByClass("rsContentTable").first()
-            .select("[id*=ctl00_ContentPlaceHolder1_DedykowanyPlanStudenta_PlanZajecRadScheduler]")
-            .map { it.attr("title").dropLast(1) }
+        val coursify: (Document) -> Unit = { html ->
+            //Get current view state
+            viewState = html
+                .select("input[name=__VIEWSTATE]")
+                .first()
+                .attr("value")
 
-        responseDocument = response.parse()
+            html
+                .getElementById("ctl00_ContentPlaceHolder1_DedykowanyPlanStudenta_PlanZajecRadScheduler")
+                .getElementsByClass("rsContentTable").first()
+                .select("[id*=ctl00_ContentPlaceHolder1_DedykowanyPlanStudenta_PlanZajecRadScheduler]")
+                .map { it.attr("title").dropLast(1) } //Select titles
+                .map { getDetail(it, viewState, cookies) } //Get details of course
+                .map { parseDetail(it) } //Parse detial
+                .let { courses.addAll(it) }
+        }
 
-        viewState = responseDocument
-            .select("input[name=__VIEWSTATE]")
-            .first()
-            .attr("value")
+        //Coursify first page
+        coursify(Jsoup.connect("$href/TwojPlan.aspx").cookies(cookies).get())
 
-        //Get timetable details
-        return titles.map {
-            response = Jsoup.connect("https://planzajec.pjwstk.edu.pl/TwojPlan.aspx")
+        //Return if one week required
+        if (weeks <= 1) return courses
+
+        for (i in 1 until weeks) {
+            //Cursify next page
+            val next = Jsoup.connect("$href/TwojPlan.aspx")
                 .method(Connection.Method.POST)
                 .cookies(cookies)
-                .header("X-MicrosoftAjax", "Delta=true")
+                //.header("X-MicrosoftAjax", "Delta=true")
+                .data("__EVENTARGUMENT", "{\"Command\":\"NavigateToNextPeriod\"}")
                 .data("__VIEWSTATE", viewState)
                 .data(
-                    "ctl00\$RadScriptManager1",
-                    "ctl00\$ContentPlaceHolder1\$DedykowanyPlanStudenta\$RadToolTipManager1RTMPanel|ctl00\$ContentPlaceHolder1\$DedykowanyPlanStudenta\$RadToolTipManager1RTMPanel"
+                    "__EVENTTARGET",
+                    "ctl00\$ContentPlaceHolder1\$DedykowanyPlanStudenta\$PlanZajecRadScheduler"
                 )
                 .data(
-                    "ctl00_ContentPlaceHolder1_DedykowanyPlanStudenta_RadToolTipManager1_ClientState",
-                    "{\"AjaxTargetControl\":\"\",\"Value\":\"$it\"}"
+                    "ctl00\$RadScriptManager1",
+                    "ctl00\$ContentPlaceHolder1\$ctl00\$ContentPlaceHolder1\$DedykowanyPlanStudenta\$AjaxPanel1Panel|ctl00\$ContentPlaceHolder1\$DedykowanyPlanStudenta\$PlanZajecRadScheduler"
                 )
                 .execute()
 
-            val id = "ContentPlaceHolder1_DedykowanyPlanStudenta_ctl10_"
-            response.parse().let { d ->
-
-                val hf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
-                val df = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-
-                val test = d.getElementById("${id}NazwaPrzedmiotyLabel").text()
-                Course(
-                    d.getElementById("${id}NazwaPrzedmiotyLabel").text().trim(),
-                    d.getElementById("${id}KodPrzedmiotuLabel").text().trim(),
-                    d.getElementById("${id}TypZajecLabel").text().trim(),
-                    d.getElementById("${id}GrupyLabel").text().trim(),
-                    d.getElementById("${id}DydaktycyLabel").text().trim().split(", "),
-                    d.getElementById("${id}BudynekLabel").text().trim(),
-                    d.getElementById("${id}SalaLabel").text().trim(),
-                    df.parse(d.getElementById("${id}DataZajecLabel").text().trim()) ?: Date(),
-                    hf.parse(d.getElementById("${id}GodzRozpLabel").text().trim()) ?: Date(),
-                    hf.parse(d.getElementById("${id}GodzZakonLabel").text().trim()) ?: Date(),
-                    d.getElementById("${id}CzasTrwaniaLabel").text().trim(),
-                    d.getElementById("${id}KodMsTeamsLabel").text().trim(),
-                )
-            }
+            coursify(next.parse())
         }
+
+        return courses
     }
+
+    private fun getDetail(
+        title: String,
+        viewState: String,
+        cookies: Map<String, String>
+    ): Document =
+        Jsoup.connect("$href/TwojPlan.aspx")
+            .method(Connection.Method.POST)
+            .cookies(cookies)
+            .header("X-MicrosoftAjax", "Delta=true")
+            .data("__VIEWSTATE", viewState)
+            .data(
+                "ctl00\$RadScriptManager1",
+                "ctl00\$ContentPlaceHolder1\$DedykowanyPlanStudenta\$RadToolTipManager1RTMPanel|ctl00\$ContentPlaceHolder1\$DedykowanyPlanStudenta\$RadToolTipManager1RTMPanel"
+            )
+            .data(
+                "ctl00_ContentPlaceHolder1_DedykowanyPlanStudenta_RadToolTipManager1_ClientState",
+                "{\"AjaxTargetControl\":\"\",\"Value\":\"$title\"}"
+            )
+            .execute()
+            .parse()
+
+    private fun parseDetail(d: Document): Course {
+        val get: (String, String) -> String = { id, alt ->
+            val value = d.getElementById("ContentPlaceHolder1_DedykowanyPlanStudenta_ctl10_$id")
+                ?: d.getElementById("ContentPlaceHolder1_DedykowanyPlanStudenta_ctl10_$alt")
+                ?: Element("err")
+
+            value.text().trim()
+        }
+
+        //val hf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+        //val df = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+
+        return Course(
+            get("NazwaPrzedmiotyLabel", "NazwyPrzedmiotowLabel"),
+            get("KodPrzedmiotuLabel", "KodyPrzedmiotuLabel"),
+            get("TypZajecLabel", "TypRezerwacjiLabel"),
+            get("GrupyLabel", "GrupyStudenckieLabel"),
+            get("DydaktycyLabel", "OsobaRezerwujacaLabel").split(", "),
+            get("BudynekLabel", ""),
+            get("SalaLabel", ""),
+            get("DataZajecLabel", ""),
+            get("GodzRozpLabel", ""),
+            get("GodzZakonLabel", ""),
+            get("CzasTrwaniaLabel", ""),
+            get("KodMsTeamsLabel", "")
+        )
+    }
+
 }
