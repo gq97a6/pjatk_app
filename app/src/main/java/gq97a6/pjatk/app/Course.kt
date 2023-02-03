@@ -11,9 +11,9 @@ data class Course(
     val educators: List<String>,
     val building: String,
     val room: String,
-    val date: Date,
-    val start: Date,
-    val end: Date,
+    val date: String,
+    val start: String,
+    val end: String,
     val len: String,
     val msCode: String
 )
