@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.io.File
 import java.io.FileReader
+import java.sql.Time
 import kotlin.reflect.KClass
 
 object Storage {
@@ -16,7 +17,7 @@ object Storage {
             field = value
             path = mapOf(
                 Settings::class to "$value/settings",
-                Course::class to "$value/timetable"
+                Timetable::class to "$value/timetable"
             )
         }
 
