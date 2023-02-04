@@ -13,87 +13,35 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.fragment.app.Fragment
-import gq97a6.pjatk.app.compose.BasicButton
-import gq97a6.pjatk.app.compose.EditText
 import gq97a6.pjatk.app.Fetcher
-import gq97a6.pjatk.app.compose.ComposeTheme
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import gq97a6.pjatk.app.G
+import gq97a6.pjatk.app.G.settings
+import gq97a6.pjatk.app.Storage.saveToFile
+import gq97a6.pjatk.app.activities.MainActivity
+import gq97a6.pjatk.app.compose.*
+import kotlinx.coroutines.*
 
 class TimetableFragment : Fragment() {
 
-    @OptIn(DelicateCoroutinesApi::class)
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        return ComposeView(requireContext()).apply {
-            setContent {
-                ComposeTheme {
-                    var html by remember { mutableStateOf("ŁADOWANIE...") }
+    ): View = composeConstruct(requireContext()) {
+        BasicButton(
+            onClick = {
+                settings.login = ""
+                settings.pass = ""
+                settings.saveToFile()
 
-                    var pass by remember { mutableStateOf("") }
-                    var login by remember { mutableStateOf("") }
-
-                    var hasLogin by remember { mutableStateOf(false) }
-
-                    Column(
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        EditText(
-                            label = { Text("Login") },
-                            modifier = Modifier.padding(20.dp),
-                            value = login,
-                            onValueChange = {
-                                login = it
-                            })
-
-                        EditText(
-                            label = { Text("Password") },
-                            modifier = Modifier.padding(20.dp),
-                            visualTransformation = PasswordVisualTransformation(),
-                            value = pass,
-                            onValueChange = {
-                                pass = it
-                            })
-
-                        BasicButton(
-                            onClick = {
-                                hasLogin = true
-                                //GlobalScope.launch { html = Fetcher.fetch(login, pass) }
-                                GlobalScope.launch {
-                                    val courses = Fetcher.fetch("x", "x", 2)
-                                    html = ""
-                                    courses.forEach { html += it.toString() + "\n\n" }
-                                }
-                            },
-                            Modifier
-                                .padding(20.dp)
-                                .weight(1f)
-                                .fillMaxWidth()
-                        ) {
-                            Text(text = "Login")
-                        }
-
-                        if (hasLogin) {
-                            Dialog({ hasLogin = false }) {
-                                Surface(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(vertical = 50.dp, horizontal = 10.dp)
-                                        .background(Color.White)
-                                ) {
-                                    Text(text = html, modifier = Modifier.padding(10.dp))
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+                MainActivity.fm.replaceWith(LoginFragment(), false)
+            },
+            modifier = Modifier.size(100.dp)
+        ) {
+            Text("LOGOUT", fontSize = 18.sp, color = Colors.primary)
         }
     }
 
