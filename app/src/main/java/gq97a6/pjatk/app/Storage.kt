@@ -15,7 +15,8 @@ object Storage {
         set(value) {
             field = value
             path = mapOf(
-                G::class to "$value/settings"
+                Settings::class to "$value/settings",
+                Course::class to "$value/timetable"
             )
         }
 
@@ -27,7 +28,8 @@ object Storage {
         try {
             val path = path[this::class]
             File(path!!).writeText(save)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            run {}
         }
     }
 

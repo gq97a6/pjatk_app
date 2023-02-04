@@ -1,5 +1,6 @@
 package gq97a6.pjatk.app
 
+import kotlinx.coroutines.withTimeoutOrNull
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -8,43 +9,45 @@ import org.jsoup.nodes.Element
 object Fetcher {
     private const val href = "https://planzajec.pjwstk.edu.pl"
 
-    fun fetch(login: String, pass: String, weeks: Int = 1): List<Course> {
-        //Get necessary body values
-        val html = Jsoup
-            .connect("$href/Logowanie.aspx")
-            .method(Connection.Method.GET)
-            .execute()
-            .parse()
+    suspend fun fetch(login: String, pass: String, weeks: Int = 1): List<Course>? =
+        withTimeoutOrNull(10000) {
+            //Get necessary body values
+            val html = Jsoup
+                .connect("$href/Logowanie.aspx")
+                .method(Connection.Method.GET)
+                .execute()
+                .parse()
 
-        val eventValidation = html
-            .select("input[name=__EVENTVALIDATION]")
-            .first()
-            .attr("value")
+            val eventValidation = html
+                .select("input[name=__EVENTVALIDATION]")
+                .first()
+                .attr("value")
 
-        val viewState = html
-            .select("input[name=__VIEWSTATE]")
-            .first()
-            .attr("value")
+            val viewState = html
+                .select("input[name=__VIEWSTATE]")
+                .first()
+                .attr("value")
 
-        val viewStateGen = html
-            .select("input[name=__VIEWSTATEGENERATOR]")
-            .first()
-            .attr("value")
+            val viewStateGen = html
+                .select("input[name=__VIEWSTATEGENERATOR]")
+                .first()
+                .attr("value")
 
-        //Get cookies
-        val cookies = Jsoup.connect("$href/Logowanie.aspx")
-            .method(Connection.Method.POST)
-            .data("__VIEWSTATE", viewState)
-            .data("__VIEWSTATEGENERATOR", viewStateGen)
-            .data("__EVENTVALIDATION", eventValidation)
-            .data("ctl00\$ContentPlaceHolder1\$Login1\$UserName", login)
-            .data("ctl00\$ContentPlaceHolder1\$Login1\$Password", pass)
-            .data("ctl00\$ContentPlaceHolder1\$Login1\$LoginButton", "Zaloguj")
-            .execute()
-            .cookies()
+            //Get cookies
+            val cookies = Jsoup.connect("$href/Logowanie.aspx")
+                .method(Connection.Method.POST)
+                .data("__VIEWSTATE", viewState)
+                .data("__VIEWSTATEGENERATOR", viewStateGen)
+                .data("__EVENTVALIDATION", eventValidation)
+                .data("ctl00\$ContentPlaceHolder1\$Login1\$UserName", login)
+                .data("ctl00\$ContentPlaceHolder1\$Login1\$Password", pass)
+                .data("ctl00\$ContentPlaceHolder1\$Login1\$LoginButton", "Zaloguj")
+                .execute()
+                .cookies()
 
-        return getCourses(cookies, weeks)
-    }
+            if (cookies.isEmpty()) throw FetchException("Nieprawidłowe dane logowania")
+            return@withTimeoutOrNull getCourses(cookies, weeks)
+        }
 
     private fun getCourses(cookies: Map<String, String>, weeks: Int): List<Course> {
         val courses: MutableList<Course> = mutableListOf()
@@ -146,4 +149,5 @@ object Fetcher {
         )
     }
 
+    class FetchException(override val message: String) : Exception(message)
 }

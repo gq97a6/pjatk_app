@@ -6,7 +6,10 @@ import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowInsetsControllerCompat
 import gq97a6.pjatk.app.G
+import gq97a6.pjatk.app.G.settings
+import gq97a6.pjatk.app.G.timetable
 import gq97a6.pjatk.app.Storage.rootFolder
+import gq97a6.pjatk.app.Storage.saveToFile
 import gq97a6.pjatk.app.activities.fragments.FragmentManager
 import gq97a6.pjatk.app.activities.fragments.LoginFragment
 import gq97a6.pjatk.app.activities.fragments.TimetableFragment
@@ -48,7 +51,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         fm.replaceWith(
-            if (G.settings.login != "" && G.settings.pass != "") LoginFragment()
+            if (settings.login != "" && settings.pass != "") TimetableFragment()
             else LoginFragment(),
             false,
             null

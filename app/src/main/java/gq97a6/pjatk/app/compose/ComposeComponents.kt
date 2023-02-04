@@ -1,5 +1,6 @@
 package gq97a6.pjatk.app.compose
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -7,6 +8,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.Checkbox
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
@@ -14,7 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
@@ -87,5 +89,40 @@ fun BasicButton(
         contentAlignment = contentAlignment
     ) {
         content()
+    }
+}
+
+inline fun Modifier.nrClickable(crossinline onClick: () -> Unit): Modifier = composed {
+    clickable(indication = null,
+        interactionSource = remember { MutableInteractionSource() }) {
+        onClick()
+    }
+}
+
+@Composable
+fun LabeledCheckbox(
+    label: @Composable (() -> Unit),
+    checked: Boolean,
+    onCheckedChange: ((Boolean) -> Unit),
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() }
+) {
+    Row(
+        modifier = modifier.nrClickable(onClick = { onCheckedChange(!checked) }),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Checkbox(
+            modifier = Modifier
+                .width(20.dp)
+                .height(20.dp),
+            checked = checked,
+            enabled = enabled,
+            interactionSource = interactionSource,
+            colors = CheckBoxColors(),
+            onCheckedChange = onCheckedChange
+        )
+        Spacer(modifier = Modifier.padding(5.dp))
+        label()
     }
 }
