@@ -4,8 +4,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.animation.*
-import androidx.compose.animation.core.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -26,9 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.Fragment
 import gq97a6.pjatk.app.Fetcher
-import gq97a6.pjatk.app.G
 import gq97a6.pjatk.app.G.settings
-import gq97a6.pjatk.app.G.timetable
 import gq97a6.pjatk.app.R
 import gq97a6.pjatk.app.Storage.saveToFile
 import gq97a6.pjatk.app.activities.MainActivity.Companion.fm
@@ -39,7 +42,6 @@ import kotlinx.coroutines.launch
 
 class LoginFragment : Fragment() {
 
-    @OptIn(ExperimentalAnimationApi::class)
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -147,21 +149,16 @@ class LoginFragment : Fragment() {
                                 textVisible = false
 
                                 CoroutineScope(Dispatchers.IO).launch {
-                                    var success = false
                                     try {
                                         Fetcher.fetch(login, pass).let {
-                                            if (it == null) return@let "Wystąpił błąd"
+                                            if(!it) return@let
                                             if (save) {
                                                 settings.login = login
                                                 settings.pass = pass
                                                 settings.saveToFile()
                                             }
-
-                                            timetable = it
-                                            timetable.saveToFile()
-
-                                            success = true
                                             fm.replaceWith(TimetableFragment(), false)
+                                            return@launch
                                         }
                                     } catch (e: Fetcher.FetchException) {
                                         text = e.message
@@ -169,11 +166,9 @@ class LoginFragment : Fragment() {
                                         text = "Wystąpił błąd"
                                     }
 
-                                    if (!success) {
-                                        buttonEnabled = true
-                                        uiVisible = true
-                                        textVisible = true
-                                    }
+                                    buttonEnabled = true
+                                    uiVisible = true
+                                    textVisible = true
                                 }
                             },
                             modifier = Modifier

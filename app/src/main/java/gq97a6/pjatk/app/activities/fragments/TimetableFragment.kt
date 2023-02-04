@@ -43,6 +43,14 @@ class TimetableFragment : Fragment() {
         ) {
             Text("LOGOUT", fontSize = 18.sp, color = Colors.primary)
         }
+
+        //widok tygodnia
+        //widok dnia
+        //dodatkowe info
+        //przycisk wylogowania
+        //przycisk odświeżenia
+        //aktualność danych
+        //przełączanie tygodnia
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

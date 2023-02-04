@@ -1,5 +1,7 @@
 package gq97a6.pjatk.app
 
+import gq97a6.pjatk.app.G.timetable
+import gq97a6.pjatk.app.Storage.saveToFile
 import kotlinx.coroutines.withTimeoutOrNull
 import org.jsoup.Connection
 import org.jsoup.Jsoup
@@ -9,7 +11,7 @@ import org.jsoup.nodes.Element
 object Fetcher {
     private const val href = "https://planzajec.pjwstk.edu.pl"
 
-    suspend fun fetch(login: String, pass: String, weeks: Int = 1): List<Course>? =
+    suspend fun fetch(login: String, pass: String, weeks: Int = 1): Boolean =
         withTimeoutOrNull(10000) {
             //Get necessary body values
             val html = Jsoup
@@ -46,8 +48,16 @@ object Fetcher {
                 .cookies()
 
             if (cookies.isEmpty()) throw FetchException("Nieprawidłowe dane logowania")
-            return@withTimeoutOrNull getCourses(cookies, weeks)
-        }
+
+            getCourses(cookies, weeks).let {
+                if (it.isNotEmpty()) {
+                    timetable.courses = it
+                    return@withTimeoutOrNull true
+                }
+            }
+
+            return@withTimeoutOrNull false
+        } ?: false
 
     private fun getCourses(cookies: Map<String, String>, weeks: Int): List<Course> {
         val courses: MutableList<Course> = mutableListOf()
