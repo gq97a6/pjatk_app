@@ -51,7 +51,7 @@ object Fetcher {
 
             getCourses(cookies, weeks).let {
                 if (it.isNotEmpty()) {
-                    timetable.courses = it
+                    timetable.update(it)
                     return@withTimeoutOrNull true
                 }
             }
@@ -140,12 +140,9 @@ object Fetcher {
             value.text().trim()
         }
 
-        //val hf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
-        //val df = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-
         return Course(
             get("NazwaPrzedmiotyLabel", "NazwyPrzedmiotowLabel"),
-            get("KodPrzedmiotuLabel", "KodyPrzedmiotuLabel"),
+            get("KodPrzedmiotuLabel", "KodyPrzedmiotowLabel"),
             get("TypZajecLabel", "TypRezerwacjiLabel"),
             get("GrupyLabel", "GrupyStudenckieLabel"),
             get("DydaktycyLabel", "OsobaRezerwujacaLabel").split(", "),
