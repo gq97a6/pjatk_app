@@ -2,15 +2,19 @@ package gq97a6.pjatk.app
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JSR310Module
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.io.File
 import java.io.FileReader
 import java.sql.Time
 import kotlin.reflect.KClass
+import kotlin.reflect.jvm.internal.impl.load.java.Jsr305Settings
 
 object Storage {
     val mapper: ObjectMapper = jacksonObjectMapper()
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        .registerModule(JavaTimeModule())
 
     var rootFolder: String = ""
         set(value) {

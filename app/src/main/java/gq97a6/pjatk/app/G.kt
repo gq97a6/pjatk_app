@@ -9,7 +9,7 @@ object G {
     var timetable = Timetable()
 
     fun initialize() {
-        settings = parseSave() ?: Settings()
         timetable = parseSave() ?: Timetable()
+        settings = parseSave() ?: Settings()
     }
 }

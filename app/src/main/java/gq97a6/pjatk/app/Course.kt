@@ -1,19 +1,28 @@
 package gq97a6.pjatk.app
 
-import java.util.Date
-import java.sql.Time
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.util.*
 
-data class Course(
-    val name: String,
-    val code: String,
-    val type: String,
-    val groups: String,
-    val educators: List<String>,
-    val building: String,
-    val room: String,
-    val date: String,
-    val start: String,
-    val end: String,
-    val len: String,
-    val msCode: String
-)
+class Course(
+    val name: String = "",
+    val code: String = "",
+    val type: String = "",
+    val groups: String = "",
+    val educators: List<String> = listOf(),
+    val building: String = "",
+    val room: String = "",
+    val dateString: String = "",
+    val startString: String = "",
+    val endString: String = "",
+    val len: String = "",
+    val msCode: String = ""
+) {
+    var date = { LocalDate.parse(dateString, pattern("dd.MM.yyyy")) } catch LocalDate.MIN
+    var start = { LocalTime.parse(startString, pattern("HH:mm:ss")) } catch LocalTime.MIN
+    var end = { LocalTime.parse(endString, pattern("HH:mm:ss")) } catch LocalTime.MIN
+
+    private fun pattern(of: String) = DateTimeFormatter.ofPattern(of, Locale.forLanguageTag("pl-PL"))
+}

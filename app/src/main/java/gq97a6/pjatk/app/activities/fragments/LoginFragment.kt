@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import androidx.fragment.app.Fragment
 import gq97a6.pjatk.app.Fetcher
 import gq97a6.pjatk.app.G.settings
+import gq97a6.pjatk.app.G.timetable
 import gq97a6.pjatk.app.R
 import gq97a6.pjatk.app.Storage.saveToFile
 import gq97a6.pjatk.app.activities.MainActivity.Companion.fm
@@ -39,6 +40,7 @@ import gq97a6.pjatk.app.compose.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 class LoginFragment : Fragment() {
 
@@ -124,6 +126,7 @@ class LoginFragment : Fragment() {
                         ) {
                             EditText(
                                 label = { Text("Login") },
+                                placeholder = { Text("sXXXXX") },
                                 modifier = Modifier,
                                 value = login,
                                 onValueChange = {
@@ -131,7 +134,7 @@ class LoginFragment : Fragment() {
                                 })
 
                             EditText(
-                                label = { Text("Password") },
+                                label = { Text("Hasło") },
                                 modifier = Modifier,
                                 visualTransformation = PasswordVisualTransformation(),
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -150,19 +153,21 @@ class LoginFragment : Fragment() {
 
                                 CoroutineScope(Dispatchers.IO).launch {
                                     try {
-                                        Fetcher.fetch(login, pass).let {
-                                            if(!it) return@let
+                                        Fetcher.fetch(login, pass, 4).let { success ->
+                                            if (!success) return@let
                                             if (save) {
                                                 settings.login = login
                                                 settings.pass = pass
                                                 settings.saveToFile()
                                             }
+
                                             fm.replaceWith(TimetableFragment(), false)
                                             return@launch
                                         }
                                     } catch (e: Fetcher.FetchException) {
                                         text = e.message
                                     } catch (e: Exception) {
+                                        val ee = e
                                         text = "Wystąpił błąd"
                                     }
 
@@ -185,7 +190,7 @@ class LoginFragment : Fragment() {
                         onCheckedChange = { save = it },
                         label = {
                             Text(
-                                "Save credentials",
+                                "Zapamiętaj dane",
                                 fontSize = 15.sp,
                                 color = Colors.secondary
                             )
