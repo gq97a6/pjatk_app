@@ -154,7 +154,7 @@ class LoginFragment : Fragment() {
 
                                 CoroutineScope(Dispatchers.IO).launch {
                                     try {
-                                        Fetcher.fetch(login, pass, 12).let { success ->
+                                        Fetcher.fetch(login, pass, settings.weeks).let { success ->
                                             if (!success) return@let
                                             if (save) {
                                                 settings.login = login
