@@ -35,6 +35,7 @@ import gq97a6.pjatk.app.G.settings
 import gq97a6.pjatk.app.G.timetable
 import gq97a6.pjatk.app.R
 import gq97a6.pjatk.app.Storage.saveToFile
+import gq97a6.pjatk.app.TMP
 import gq97a6.pjatk.app.activities.MainActivity.Companion.fm
 import gq97a6.pjatk.app.compose.*
 import kotlinx.coroutines.CoroutineScope
@@ -50,8 +51,8 @@ class LoginFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View = composeConstruct(requireContext()) {
 
-        var login by remember { mutableStateOf("") }
-        var pass by remember { mutableStateOf("") }
+        var login by remember { mutableStateOf(TMP.login) }
+        var pass by remember { mutableStateOf(TMP.pass) }
         var text by remember { mutableStateOf("Error") }
         var save by remember { mutableStateOf(false) }
 
@@ -153,7 +154,7 @@ class LoginFragment : Fragment() {
 
                                 CoroutineScope(Dispatchers.IO).launch {
                                     try {
-                                        Fetcher.fetch(login, pass, 4).let { success ->
+                                        Fetcher.fetch(login, pass, 12).let { success ->
                                             if (!success) return@let
                                             if (save) {
                                                 settings.login = login
@@ -167,7 +168,6 @@ class LoginFragment : Fragment() {
                                     } catch (e: Fetcher.FetchException) {
                                         text = e.message
                                     } catch (e: Exception) {
-                                        val ee = e
                                         text = "Wystąpił błąd"
                                     }
 

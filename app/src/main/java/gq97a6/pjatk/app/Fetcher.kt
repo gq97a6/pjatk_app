@@ -23,17 +23,17 @@ object Fetcher {
             val eventValidation = html
                 .select("input[name=__EVENTVALIDATION]")
                 .first()
-                .attr("value")
+                ?.attr("value")
 
             val viewState = html
                 .select("input[name=__VIEWSTATE]")
                 .first()
-                .attr("value")
+                ?.attr("value")
 
             val viewStateGen = html
                 .select("input[name=__VIEWSTATEGENERATOR]")
                 .first()
-                .attr("value")
+                ?.attr("value")
 
             //Get cookies
             val cookies = Jsoup.connect("$href/Logowanie.aspx")
@@ -49,14 +49,8 @@ object Fetcher {
 
             if (cookies.isEmpty()) throw FetchException("Nieprawidłowe dane logowania")
 
-            getCourses(cookies, weeks).let {
-                if (it.isNotEmpty()) {
-                    timetable.update(it)
-                    return@withTimeoutOrNull true
-                }
-            }
-
-            return@withTimeoutOrNull false
+            timetable.update(getCourses(cookies, weeks))
+            true
         } ?: false
 
     private fun getCourses(cookies: Map<String, String>, weeks: Int): List<Course> {
@@ -67,17 +61,18 @@ object Fetcher {
             //Get current view state
             viewState = html
                 .select("input[name=__VIEWSTATE]")
-                .first()
+                .first()!!
                 .attr("value")
 
             html
                 .getElementById("ctl00_ContentPlaceHolder1_DedykowanyPlanStudenta_PlanZajecRadScheduler")
-                .getElementsByClass("rsContentTable").first()
-                .select("[id*=ctl00_ContentPlaceHolder1_DedykowanyPlanStudenta_PlanZajecRadScheduler]")
-                .map { it.attr("title").dropLast(1) } //Select titles
-                .map { getDetail(it, viewState, cookies) } //Get details of course
-                .map { parseDetail(it) } //Parse detial
-                .let { courses.addAll(it) }
+                ?.getElementsByClass("rsContentTable")
+                ?.first()
+                ?.select("[id*=ctl00_ContentPlaceHolder1_DedykowanyPlanStudenta_PlanZajecRadScheduler]")
+                ?.map { it.attr("title").dropLast(1) } //Select titles
+                ?.map { getDetail(it, viewState, cookies) } //Get details of course
+                ?.map { parseDetail(it) } //Parse detial
+                ?.let { courses.addAll(it) }
         }
 
         //Coursify first page
