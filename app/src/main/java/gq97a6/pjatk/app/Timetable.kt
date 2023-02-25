@@ -12,7 +12,7 @@ class Timetable(var courses: List<Course> = listOf()) {
 
         for(i in 0..6) {
             empty.addAll(listOf(
-                Course("Metody programowania", "MPR", "Wykład", "", listOf("Czarnowski Mateusz", "Dubiela Piotr"), "A205-206", "", days[i], "12:00:00", "12:30:00", "30 min", ""),
+                Course("Metody programowania", "MPR", "Wykład", "", listOf("Czarnowski Mateusz", "Dubiela Piotr"), "", "A205-206", days[i], "12:00:00", "12:30:00", "30 min", ""),
                 Course("Algorytmy i struktury danych", "ASD", "Ćwiczenia", "", listOf("Urbanowicz Adam"), "", "A205-206", days[i], "13:00:00", "13:50:00", "50 min", ""),
                 Course("Java zaawansowana", "JAZ", "Ćwiczenia", "", listOf("Nenca Anna"), "", "A502", days[i], "14:00:00", "14:20:00", "20 min", ""),
                 Course("Algebra liniowa i geometria", "ALG", "Wykład", "", listOf("Puźniakowska-Gałuch Elżbieta"), "", "A405-406", days[i], "15:00:00", "15:40:00", "40 min", ""),
