@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.action.ActionParameters
@@ -20,6 +21,7 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
+import gq97a6.pjatk.app.NextCourseWidget.Companion.updateEnabled
 import kotlin.random.Random
 
 class NextCourseWidgetReceiver : GlanceAppWidgetReceiver() {
@@ -27,6 +29,10 @@ class NextCourseWidgetReceiver : GlanceAppWidgetReceiver() {
 }
 
 class NextCourseWidget : GlanceAppWidget() {
+
+    companion object {
+        var updateEnabled = true
+    }
 
     @Composable
     override fun Content() {
@@ -37,48 +43,111 @@ class NextCourseWidget : GlanceAppWidget() {
                 .fillMaxSize()
                 .background(Color.Black)
         ) {
-            G.timetable.courses.subList(0, 3).forEach {
-                it.apply {
-                    Row {
-                        Text(
-                            text = code,
-                            modifier = GlanceModifier.width(60.dp),
-                            style = TextStyle(color = ColorProvider(Color.White))
-                        )
-                        Text(
-                            text = room, modifier = GlanceModifier.width(100.dp),
-                            style = TextStyle(color = ColorProvider(Color.White))
-                        )
-                        Text(
-                            text = "${Random.nextInt(0, 100)}m", modifier = GlanceModifier.width(60.dp),
-                            style = TextStyle(color = ColorProvider(Color.White), textAlign = TextAlign.Center)
-                        )
-                        Text(
-                            text = "${Random.nextInt(0, 100)}m", modifier = GlanceModifier.width(60.dp),
-                            style = TextStyle(color = ColorProvider(Color.White), textAlign = TextAlign.End)
-                        )
+            if (updateEnabled) {
+                G.timetable.courses.subList(0, 3).forEach {
+                    it.apply {
+                        Row {
+                            Text(
+                                text = code,
+                                modifier = GlanceModifier.width(60.dp),
+                                style = TextStyle(color = ColorProvider(Color.White))
+                            )
+                            Text(
+                                text = room, modifier = GlanceModifier.width(100.dp),
+                                style = TextStyle(color = ColorProvider(Color.White))
+                            )
+                            Text(
+                                text = "${Random.nextInt(0, 100)}m",
+                                modifier = GlanceModifier.width(60.dp),
+                                style = TextStyle(
+                                    color = ColorProvider(Color.White),
+                                    textAlign = TextAlign.Center
+                                )
+                            )
+                            Text(
+                                text = "${Random.nextInt(0, 100)}m",
+                                modifier = GlanceModifier.width(60.dp),
+                                style = TextStyle(
+                                    color = ColorProvider(Color.White),
+                                    textAlign = TextAlign.End
+                                )
+                            )
+                        }
                     }
                 }
+
+                Spacer(modifier = GlanceModifier.height(10.dp))
+
+                Row(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = GlanceModifier
+                        .background(Color(41, 41, 41))
+                        .height(35.dp)
+                        .fillMaxWidth()
+                ) {
+                    Text(
+                        text = "UPDATE",
+                        modifier = GlanceModifier
+                            .width(200.dp),
+                            //.clickable(actionRunCallback<UpdateAction>()),
+                        style = TextStyle(
+                            color = ColorProvider(Color.White),
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.End
+                        )
+                    )
+
+                    Spacer(modifier = GlanceModifier.width(80.dp))
+
+                    Text(
+                        text = "REFRESH",
+                        modifier = GlanceModifier
+                            .width(200.dp)
+                            .clickable(actionRunCallback<RefreshAction>()),
+                        style = TextStyle(
+                            color = ColorProvider(Color.White),
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Start
+                        )
+                    )
+                }
+            } else {
+                Box(contentAlignment = Alignment.Center, modifier = GlanceModifier.fillMaxSize()) {
+                    Text(
+                        text = "Updating...",
+                        style = TextStyle(
+                            color = ColorProvider(Color.White),
+                            fontSize = 30.sp
+                        )
+                    )
+                }
             }
-
-            Spacer(modifier = GlanceModifier.height(10.dp))
-
-            Text(
-                text = "REFRESH",
-                modifier = GlanceModifier
-                    .padding(top = 7.dp, bottom = 7.dp)
-                    .fillMaxWidth()
-                    .background(Color(41, 41, 41))
-                    .clickable(actionRunCallback<AddWaterClickAction>()),
-                style = TextStyle(color = ColorProvider(Color.White), fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
-            )
         }
     }
 }
 
-class AddWaterClickAction : ActionCallback {
+class RefreshAction : ActionCallback {
     override suspend fun onRun(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
-        //Fetcher.fetch(TMP.login, TMP.pass)
         NextCourseWidget().updateAll(context)
+    }
+}
+
+class UpdateAction : ActionCallback {
+    override suspend fun onRun(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
+        if (updateEnabled) {
+            updateEnabled = false
+            NextCourseWidget().updateAll(context)
+
+            try {
+                Fetcher.fetch(TMP.login, TMP.pass, 3).let { success ->
+                }
+            } catch (_: Fetcher.FetchException) {
+            } catch (_: Exception) {
+            }
+
+            updateEnabled = true
+            NextCourseWidget().updateAll(context)
+        }
     }
 }
