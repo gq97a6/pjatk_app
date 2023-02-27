@@ -1,5 +1,6 @@
 package gq97a6.pjatk.app
 
+import androidx.glance.appwidget.updateAll
 import gq97a6.pjatk.app.Storage.saveToFile
 import java.time.LocalDate
 import java.util.*

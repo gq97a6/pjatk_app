@@ -3,7 +3,9 @@ package gq97a6.pjatk.app
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.Period
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 class Course(
@@ -23,6 +25,13 @@ class Course(
     var date = { LocalDate.parse(dateString, pattern("dd.MM.yyyy")) } catch LocalDate.MIN
     var start = { LocalTime.parse(startString, pattern("HH:mm:ss")) } catch LocalTime.MIN
     var end = { LocalTime.parse(endString, pattern("HH:mm:ss")) } catch LocalTime.MIN
+
+    //TODO
+    val startIn
+        get() = eta(start)
+
+    val endIn
+        get() = eta(end)
 
     private fun pattern(of: String) = DateTimeFormatter.ofPattern(of, Locale.forLanguageTag("pl-PL"))
 }

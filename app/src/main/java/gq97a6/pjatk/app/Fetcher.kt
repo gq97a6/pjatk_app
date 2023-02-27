@@ -1,17 +1,41 @@
 package gq97a6.pjatk.app
 
-import gq97a6.pjatk.app.G.timetable
-import gq97a6.pjatk.app.Storage.saveToFile
+import gq97a6.pjatk.app.G.settings
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeoutOrNull
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
+import kotlin.system.measureTimeMillis
 
 object Fetcher {
     private const val href = "https://planzajec.pjwstk.edu.pl"
 
-    suspend fun fetch(login: String, pass: String, weeks: Int = 1): Boolean =
+    internal suspend inline fun fetch(
+        login: String = settings.login,
+        pass: String = settings.pass,
+        weeks: Int = settings.weeks,
+        eta: Long = 10000,
+        onDone: (Pair<List<Course>?, String>) -> Unit = {}
+    ) {
+        var result: Pair<List<Course>?, String>
+
+        measureTimeMillis {
+            result = try {
+                Pair(fetch(login, pass, weeks), "Przekroczono czas")
+            } catch (e: FetchException) {
+                Pair(null, e.message)
+            } catch (e: Exception) {
+                Pair(null, "Błąd wewnętrzny")
+            }
+        }.let {
+            delay(maxOf(eta - it, 0))
+            onDone(result)
+        }
+    }
+
+    private suspend fun fetch(login: String, pass: String, weeks: Int): List<Course>? =
         withTimeoutOrNull(10000) {
             //Get necessary body values
             val html = Jsoup
@@ -24,16 +48,19 @@ object Fetcher {
                 .select("input[name=__EVENTVALIDATION]")
                 .first()
                 ?.attr("value")
+                ?: ""
 
             val viewState = html
                 .select("input[name=__VIEWSTATE]")
                 .first()
                 ?.attr("value")
+                ?: ""
 
             val viewStateGen = html
                 .select("input[name=__VIEWSTATEGENERATOR]")
                 .first()
                 ?.attr("value")
+                ?: ""
 
             //Get cookies
             val cookies = Jsoup.connect("$href/Logowanie.aspx")
@@ -49,9 +76,11 @@ object Fetcher {
 
             if (cookies.isEmpty()) throw FetchException("Nieprawidłowe dane logowania")
 
-            timetable.update(getCourses(cookies, weeks))
-            true
-        } ?: false
+            getCourses(cookies, weeks).let {
+                if (it.isEmpty()) throw FetchException("Nie znaleziono planu")
+                else return@withTimeoutOrNull it
+            }
+        }
 
     private fun getCourses(cookies: Map<String, String>, weeks: Int): List<Course> {
         val courses: MutableList<Course> = mutableListOf()
