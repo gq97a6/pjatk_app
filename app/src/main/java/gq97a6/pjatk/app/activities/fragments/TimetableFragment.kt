@@ -26,6 +26,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.Fragment
+import androidx.glance.appwidget.updateAll
 import gq97a6.pjatk.app.*
 import gq97a6.pjatk.app.G.settings
 import gq97a6.pjatk.app.G.timetable
@@ -39,6 +40,8 @@ import gq97a6.pjatk.app.compose.composeConstruct
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 /*
 aktualność danych
@@ -64,13 +67,21 @@ class TimetableFragment : Fragment() {
     ) = composeConstruct(requireContext()) {
         val scaffoldState = rememberScaffoldState()
         var isLoading by remember { mutableStateOf(false) }
+        var courses by remember { mutableStateOf(timetable.courses.groupBy { it.date }) }
 
         Scaffold(
             modifier = Modifier.padding(10.dp),
             scaffoldState = scaffoldState,
-            content = { Content() },
+            content = { Content(courses) },
             topBar = { TopBar() },
-            bottomBar = { BottomBar({ isLoading = !isLoading }, requireContext()) },
+            bottomBar = {
+                BottomBar(
+                    { isLoading = !isLoading },
+                    { courses = timetable.day(LocalDate.now().plusDays(2)).groupBy { it.date } },
+                    { courses = timetable.courses.groupBy { it.date } },
+                    requireContext()
+                )
+            },
             drawerContent = { Drawer() },
             drawerBackgroundColor = Color(0, 0, 0, 0),
             drawerContentColor = Color(0, 0, 0, 0),
@@ -89,29 +100,34 @@ class TimetableFragment : Fragment() {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun Content() = Column() {
-    val tt = remember { timetable.courses.groupBy { it.date } }
+private fun Content(courses: Map<LocalDate, List<Course>>) = Column() {
 
     LazyColumn(modifier = Modifier.fillMaxWidth()) {
-        tt.forEach { date, day ->
+        courses.forEach { date, day ->
             stickyHeader {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(Color.Black)
                 ) {
-                    Text(text = date.dayOfWeek.toString(), fontSize = 30.sp, color = Colors.primary)
+                    Text(
+                        text = "${date.dzien()} ${date.format(DateTimeFormatter.ofPattern("dd.MM"))}",
+                        fontSize = 30.sp,
+                        color = Colors.primary
+                    )
                 }
             }
 
             items(day) { c ->
-                Column(modifier = Modifier.padding(top = 10.dp)) {
-                    Text(text = "${c.code}", fontSize = 20.sp, color = Colors.primary)
+                Column(modifier = Modifier.padding(top = 5.dp)) {
+                    Text(text = "${c.name}", fontSize = 20.sp, color = Colors.primary)
                     Text(text = "Od: ${c.startString}", color = Colors.primary)
                     Text(text = "Do: ${c.endString}", color = Colors.primary)
                     Text(text = "Sala: ${c.room}", color = Colors.primary)
                 }
             }
+
+            item { Spacer(modifier = Modifier.height(30.dp)) }
         }
     }
 }
@@ -131,7 +147,7 @@ private fun Drawer() =
 
 @Composable
 private fun TopBar() = Row(
-    horizontalArrangement = Arrangement.Start,
+    horizontalArrangement = Arrangement.SpaceBetween,
     verticalAlignment = Alignment.CenterVertically,
     modifier = Modifier
         .height(50.dp)
@@ -156,10 +172,28 @@ private fun TopBar() = Row(
     ) {
         Text("LOGOUT", fontSize = 10.sp, color = Colors.primary)
     }
+
+    BasicButton(
+        onClick = {
+
+        },
+        contentPadding = PaddingValues(1.dp),
+        border = BorderStroke(1.dp, Colors.primary),
+        modifier = Modifier
+            .height(30.dp)
+            .width(80.dp)
+    ) {
+        Text("SETTINGS", fontSize = 10.sp, color = Colors.primary)
+    }
 }
 
 @Composable
-private fun BottomBar(toggleLoading: () -> Unit, context: Context) = Row(
+private fun BottomBar(
+    getOnClick: () -> Unit,
+    dayOnClick: () -> Unit,
+    allOnClick: () -> Unit,
+    context: Context
+) = Row(
     horizontalArrangement = Arrangement.SpaceAround,
     verticalAlignment = Alignment.CenterVertically,
     modifier = Modifier
@@ -169,20 +203,17 @@ private fun BottomBar(toggleLoading: () -> Unit, context: Context) = Row(
 ) {
     BasicButton(
         onClick = {
-            toggleLoading()
+            getOnClick()
 
             CoroutineScope(Dispatchers.IO).launch {
-                try {
-                    Fetcher.fetch(settings.login, settings.pass, settings.weeks).let { success ->
-                        if (!success) createToast(context, "Failed")
-                    }
-                } catch (e: Fetcher.FetchException) {
-                    createToast(context, e.message)
-                } catch (e: Exception) {
-                    createToast(context, "Error")
+                Fetcher.fetch {
+                    if (it.first != null) {
+                        G.timetable.update(it.first ?: listOf())
+                        NextCourseWidget().updateAll(context)
+                    } else createToast(context, it.second)
                 }
 
-                toggleLoading()
+                getOnClick()
             }
         },
         contentPadding = PaddingValues(10.dp),
@@ -194,8 +225,7 @@ private fun BottomBar(toggleLoading: () -> Unit, context: Context) = Row(
     }
 
     BasicButton(
-        onClick = {
-        },
+        onClick = dayOnClick,
         contentPadding = PaddingValues(10.dp),
         border = BorderStroke(1.dp, Colors.primary),
         modifier = Modifier
@@ -205,8 +235,7 @@ private fun BottomBar(toggleLoading: () -> Unit, context: Context) = Row(
     }
 
     BasicButton(
-        onClick = {
-        },
+        onClick = allOnClick,
         contentPadding = PaddingValues(10.dp),
         border = BorderStroke(1.dp, Colors.primary),
         modifier = Modifier

@@ -30,18 +30,17 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.Fragment
-import gq97a6.pjatk.app.Fetcher
+import androidx.glance.appwidget.updateAll
+import gq97a6.pjatk.app.*
 import gq97a6.pjatk.app.G.settings
 import gq97a6.pjatk.app.G.timetable
 import gq97a6.pjatk.app.R
 import gq97a6.pjatk.app.Storage.saveToFile
-import gq97a6.pjatk.app.TMP
 import gq97a6.pjatk.app.activities.MainActivity.Companion.fm
 import gq97a6.pjatk.app.compose.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 
 class LoginFragment : Fragment() {
 
@@ -153,22 +152,21 @@ class LoginFragment : Fragment() {
                                 textVisible = false
 
                                 CoroutineScope(Dispatchers.IO).launch {
-                                    try {
-                                        Fetcher.fetch(login, pass, settings.weeks).let { success ->
-                                            if (!success) return@let
+                                    Fetcher.fetch(TMP.login, TMP.pass) {
+                                        if (it.first != null) {
                                             if (save) {
                                                 settings.login = login
                                                 settings.pass = pass
                                                 settings.saveToFile()
                                             }
 
+                                            timetable.update(it.first ?: listOf())
+                                            NextCourseWidget().updateAll(requireContext())
                                             fm.replaceWith(TimetableFragment(), false)
                                             return@launch
+                                        } else {
+                                            text = it.second
                                         }
-                                    } catch (e: Fetcher.FetchException) {
-                                        text = e.message
-                                    } catch (e: Exception) {
-                                        text = "Wystąpił błąd"
                                     }
 
                                     buttonEnabled = true

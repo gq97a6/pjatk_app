@@ -22,6 +22,9 @@ import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import gq97a6.pjatk.app.NextCourseWidget.Companion.updateEnabled
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 class NextCourseWidgetReceiver : GlanceAppWidgetReceiver() {
@@ -44,7 +47,7 @@ class NextCourseWidget : GlanceAppWidget() {
                 .background(Color.Black)
         ) {
             if (updateEnabled) {
-                G.timetable.courses.subList(0, 3).forEach {
+                G.timetable.courses.take(3).forEach {
                     it.apply {
                         Row {
                             Text(
@@ -57,7 +60,7 @@ class NextCourseWidget : GlanceAppWidget() {
                                 style = TextStyle(color = ColorProvider(Color.White))
                             )
                             Text(
-                                text = "${Random.nextInt(0, 100)}m",
+                                text = startIn,
                                 modifier = GlanceModifier.width(60.dp),
                                 style = TextStyle(
                                     color = ColorProvider(Color.White),
@@ -65,7 +68,7 @@ class NextCourseWidget : GlanceAppWidget() {
                                 )
                             )
                             Text(
-                                text = "${Random.nextInt(0, 100)}m",
+                                text = endIn,
                                 modifier = GlanceModifier.width(60.dp),
                                 style = TextStyle(
                                     color = ColorProvider(Color.White),
@@ -89,8 +92,8 @@ class NextCourseWidget : GlanceAppWidget() {
                     Text(
                         text = "UPDATE",
                         modifier = GlanceModifier
-                            .width(200.dp),
-                            //.clickable(actionRunCallback<UpdateAction>()),
+                            .width(200.dp)
+                            .clickable(actionRunCallback<UpdateAction>()),
                         style = TextStyle(
                             color = ColorProvider(Color.White),
                             fontWeight = FontWeight.Bold,
@@ -139,15 +142,15 @@ class UpdateAction : ActionCallback {
             updateEnabled = false
             NextCourseWidget().updateAll(context)
 
-            try {
-                Fetcher.fetch(TMP.login, TMP.pass, 3).let { success ->
-                }
-            } catch (_: Fetcher.FetchException) {
-            } catch (_: Exception) {
-            }
+            CoroutineScope(Dispatchers.IO).launch {
+                Fetcher.fetch(TMP.login, TMP.pass) {
+                    if (it.first == null) createToast(context, it.second)
+                    else createToast(context, "Success")
 
-            updateEnabled = true
-            NextCourseWidget().updateAll(context)
+                    updateEnabled = true
+                    NextCourseWidget().updateAll(context)
+                }
+            }
         }
     }
 }
