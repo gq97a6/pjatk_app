@@ -24,6 +24,8 @@ fun createToast(context: Context, msg: String, time: Int = 0) {
 }
 
 fun eta(to: LocalTime, from: LocalTime = LocalTime.now()): String {
+    if (from.isAfter(to)) return "trwa"
+
     val seconds = from.until(to, ChronoUnit.SECONDS)
     if (seconds <= 60) return "${seconds}s"
 
@@ -33,7 +35,7 @@ fun eta(to: LocalTime, from: LocalTime = LocalTime.now()): String {
     return "${hours}h ${minutes}m"
 }
 
-fun LocalDate.dzien() = when(this.dayOfWeek) {
+fun LocalDate.dzien() = when (this.dayOfWeek) {
     DayOfWeek.MONDAY -> "PONIEDZIAŁEK"
     DayOfWeek.TUESDAY -> "WTOREK"
     DayOfWeek.WEDNESDAY -> "ŚRODA"
