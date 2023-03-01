@@ -25,6 +25,8 @@ import gq97a6.pjatk.app.NextCourseWidget.Companion.updateEnabled
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.LocalDateTime
 import kotlin.random.Random
 
 class NextCourseWidgetReceiver : GlanceAppWidgetReceiver() {
@@ -47,7 +49,7 @@ class NextCourseWidget : GlanceAppWidget() {
                 .background(Color.Black)
         ) {
             if (updateEnabled) {
-                G.timetable.courses.take(3).forEach {
+                G.timetable.later(LocalDateTime.now()).take(3).forEach {
                     it.apply {
                         Row {
                             Text(
@@ -132,6 +134,12 @@ class NextCourseWidget : GlanceAppWidget() {
 
 class RefreshAction : ActionCallback {
     override suspend fun onRun(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
+        context.apply {
+            if (!G.areInitialized) {
+                Storage.rootFolder = filesDir.canonicalPath.toString()
+                G.initialize()
+            }
+        }
         NextCourseWidget().updateAll(context)
     }
 }
@@ -141,6 +149,13 @@ class UpdateAction : ActionCallback {
         if (updateEnabled) {
             updateEnabled = false
             NextCourseWidget().updateAll(context)
+
+            context.apply {
+                if (!G.areInitialized) {
+                    Storage.rootFolder = filesDir.canonicalPath.toString()
+                    G.initialize()
+                }
+            }
 
             CoroutineScope(Dispatchers.IO).launch {
                 Fetcher.fetch(TMP.login, TMP.pass) {
