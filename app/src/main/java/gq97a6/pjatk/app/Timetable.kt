@@ -1,8 +1,8 @@
 package gq97a6.pjatk.app
 
-import androidx.glance.appwidget.updateAll
 import gq97a6.pjatk.app.Storage.saveToFile
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.*
 
 class Timetable(var courses: List<Course> = listOf()) {
@@ -31,8 +31,17 @@ class Timetable(var courses: List<Course> = listOf()) {
         this.saveToFile()
     }
 
+    fun later(date: LocalDateTime = LocalDateTime.now()): List<Course> =
+        courses.filter {
+            it.date.atTime(it.end).isAfter(date) &&
+                    it.date.compareTo(date.toLocalDate()) == 0
+        }
+
+    fun after(date: LocalDateTime = LocalDateTime.now()): List<Course> =
+        courses.filter { it.date.atTime(it.end).isAfter(date) }
+
     fun day(date: LocalDate = LocalDate.now()): List<Course> =
-        courses.filter { (it.date).compareTo(date) == 0 }
+        courses.filter { it.date.compareTo(date) == 0 }
 
     fun week(date: LocalDate = LocalDate.now()): Map<LocalDate, List<Course>> {
         val start = date.minusDays(date.dayOfWeek.value.toLong())

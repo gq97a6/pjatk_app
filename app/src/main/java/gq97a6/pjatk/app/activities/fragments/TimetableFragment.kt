@@ -77,7 +77,7 @@ class TimetableFragment : Fragment() {
             bottomBar = {
                 BottomBar(
                     { isLoading = !isLoading },
-                    { courses = timetable.day(LocalDate.now().plusDays(2)).groupBy { it.date } },
+                    { courses = timetable.day().groupBy { it.date } },
                     { courses = timetable.courses.groupBy { it.date } },
                     requireContext()
                 )
