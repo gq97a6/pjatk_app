@@ -50,8 +50,8 @@ class LoginFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View = composeConstruct(requireContext()) {
 
-        var login by remember { mutableStateOf(TMP.login) }
-        var pass by remember { mutableStateOf(TMP.pass) }
+        var login by remember { mutableStateOf("") }
+        var pass by remember { mutableStateOf("") }
         var text by remember { mutableStateOf("Error") }
         var save by remember { mutableStateOf(false) }
 
@@ -152,7 +152,7 @@ class LoginFragment : Fragment() {
                                 textVisible = false
 
                                 CoroutineScope(Dispatchers.IO).launch {
-                                    Fetcher.fetch(TMP.login, TMP.pass) {
+                                    Fetcher.fetch(login, pass) {
                                         if (it.first != null) {
                                             if (save) {
                                                 settings.login = login

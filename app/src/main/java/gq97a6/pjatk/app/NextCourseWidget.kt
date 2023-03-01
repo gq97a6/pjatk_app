@@ -21,6 +21,7 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
+import gq97a6.pjatk.app.G.settings
 import gq97a6.pjatk.app.NextCourseWidget.Companion.updateEnabled
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -158,7 +159,7 @@ class UpdateAction : ActionCallback {
             }
 
             CoroutineScope(Dispatchers.IO).launch {
-                Fetcher.fetch(TMP.login, TMP.pass) {
+                Fetcher.fetch(settings.login, settings.pass) {
                     if (it.first == null) createToast(context, it.second)
                     else createToast(context, "Success")
 
