@@ -1,10 +1,11 @@
-Aplikacja do planu PJATK. Wersja beta.
+# Aplikacja do planu PJATK (beta)
 
-Szybki opis:
+##### Aplikacja
 (GET) pobranie planu
 (DAY) - wyświetla plan na dzisiaj
 (ALL) - pokazuje cały pobrany plan
 
-Jest dodatkowo widget pokazujący najpotrzebniejsze informacje na aktualny dzień (przedmiot, salę, czas do rozpoczęcia, czas do zakończenia), 
+##### Widget
+przedmiot, sala, czas do rozpoczęcia, czas do zakończenia
 (REFRESH) - odświeża listę/czasy
 (UPDATE) - ściąga aktualizację
