@@ -33,5 +33,6 @@ class Course(
     val endIn
         get() = eta(end)
 
-    private fun pattern(of: String) = DateTimeFormatter.ofPattern(of, Locale.forLanguageTag("pl-PL"))
+    private fun pattern(of: String) =
+        DateTimeFormatter.ofPattern(of, Locale.forLanguageTag("pl-PL"))
 }
