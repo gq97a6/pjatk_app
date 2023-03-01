@@ -23,8 +23,12 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.fragment.app.Fragment
 import androidx.glance.appwidget.updateAll
 import gq97a6.pjatk.app.*
@@ -100,37 +104,80 @@ class TimetableFragment : Fragment() {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun Content(courses: Map<LocalDate, List<Course>>) = Column() {
+private fun Content(courses: Map<LocalDate, List<Course>>) =
+    Box(contentAlignment = Alignment.Center) {
+        var course by remember { mutableStateOf(null as Course?) }
 
-    LazyColumn(modifier = Modifier.fillMaxWidth()) {
-        courses.forEach { date, day ->
-            stickyHeader {
-                Row(
-                    modifier = Modifier
+        LazyColumn(modifier = Modifier.fillMaxWidth()) {
+            courses.forEach { (date, day) ->
+                stickyHeader {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Colors.background)
+                    ) {
+                        Text(
+                            text = "${date.dzien()} ${date.format(DateTimeFormatter.ofPattern("dd.MM"))}",
+                            fontSize = 30.sp,
+                            color = Colors.secondary
+                        )
+                    }
+                }
+
+                items(day) { c ->
+                    Column(modifier = Modifier
+                        .padding(top = 5.dp)
                         .fillMaxWidth()
-                        .background(Color.Black)
+                        .clickable {
+                            course = c
+                        }) {
+                        Text(
+                            text = "${c.name} ${if (c.type == "Wykład") "(W)" else ""}",
+                            fontSize = 20.sp,
+                            color = Colors.primary
+                        )
+                        Text(text = "Od: ${c.startString}", color = Colors.primary)
+                        Text(text = "Do: ${c.endString}", color = Colors.primary)
+                        Text(text = "Sala: ${c.room}", color = Colors.primary)
+                    }
+                }
+
+                item { Spacer(modifier = Modifier.height(30.dp)) }
+            }
+        }
+
+        if (course != null) {
+            val c = course ?: Course()
+
+            Dialog({ course = null }) {
+                Column(
+                    modifier = Modifier
+                        .background(Colors.background.copy(0.6f))
+                        .border(BorderStroke(2.dp, Colors.primary), MaterialTheme.shapes.small)
+                        .padding(20.dp),
+                    verticalArrangement = Arrangement.Center
                 ) {
+                    Text(text = c.name, fontSize = 25.sp, color = Colors.secondary, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(text = "Kod: ${c.code}", color = Colors.primary)
+                    Text(text = "Typ: ${c.type}", color = Colors.primary)
+                    Text(text = "Grupy: ${c.groups}", color = Colors.primary)
+                    Text(text = "Budynek: ${c.building}", color = Colors.primary)
+                    Text(text = "Sala: ${c.room}", color = Colors.primary)
+                    Text(text = "Od: ${c.start}", color = Colors.primary)
+                    Text(text = "Do: ${c.end}", color = Colors.primary)
                     Text(
-                        text = "${date.dzien()} ${date.format(DateTimeFormatter.ofPattern("dd.MM"))}",
-                        fontSize = 30.sp,
+                        text = "Data: ${c.date.format(DateTimeFormatter.ofPattern("dd.MM"))}",
+                        color = Colors.primary
+                    )
+                    Text(
+                        text = "Prowadzący: ${c.educators.joinToString(", ")}",
                         color = Colors.primary
                     )
                 }
             }
-
-            items(day) { c ->
-                Column(modifier = Modifier.padding(top = 5.dp)) {
-                    Text(text = "${c.name}", fontSize = 20.sp, color = Colors.primary)
-                    Text(text = "Od: ${c.startString}", color = Colors.primary)
-                    Text(text = "Do: ${c.endString}", color = Colors.primary)
-                    Text(text = "Sala: ${c.room}", color = Colors.primary)
-                }
-            }
-
-            item { Spacer(modifier = Modifier.height(30.dp)) }
         }
     }
-}
 
 @Composable
 private fun Drawer() =
