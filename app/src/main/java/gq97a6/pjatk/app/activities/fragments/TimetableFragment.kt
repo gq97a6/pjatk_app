@@ -67,7 +67,7 @@ class TimetableFragment : Fragment() {
     ) = composeConstruct(requireContext()) {
         val scaffoldState = rememberScaffoldState()
         var isLoading by remember { mutableStateOf(false) }
-        var courses by remember { mutableStateOf(timetable.courses.groupBy { it.date }) }
+        var courses by remember { mutableStateOf(timetable.day().groupBy { it.date }) }
 
         Scaffold(
             modifier = Modifier.padding(10.dp),
