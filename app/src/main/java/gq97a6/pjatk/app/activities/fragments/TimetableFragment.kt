@@ -145,6 +145,8 @@ private fun Content(courses: Map<LocalDate, List<Course>>) =
 
                 item { Spacer(modifier = Modifier.height(30.dp)) }
             }
+
+            item { Spacer(modifier = Modifier.height(70.dp)) }
         }
 
         if (courses.isEmpty()) {
