@@ -47,21 +47,6 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-/*
-aktualność danych
-
-ustawienia
-    wymagania aktualności danych
-    najbliższy dzień czy dzisiaj jako day view
-    default view
-
-widok tygodnia
-    dodatkowe info
-
-widok dzisiaj
-    dodatkowe info
-*/
-
 class TimetableFragment : Fragment() {
 
     override fun onCreateView(
