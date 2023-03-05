@@ -26,9 +26,7 @@ import gq97a6.pjatk.app.NextCourseWidget.Companion.updateEnabled
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 import java.time.LocalDateTime
-import kotlin.random.Random
 
 class NextCourseWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = NextCourseWidget()
@@ -134,7 +132,11 @@ class NextCourseWidget : GlanceAppWidget() {
 }
 
 class RefreshAction : ActionCallback {
-    override suspend fun onRun(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
+    override suspend fun onAction(
+        context: Context,
+        glanceId: GlanceId,
+        parameters: ActionParameters
+    ) {
         context.apply {
             if (!G.areInitialized) {
                 Storage.rootFolder = filesDir.canonicalPath.toString()
@@ -146,7 +148,11 @@ class RefreshAction : ActionCallback {
 }
 
 class UpdateAction : ActionCallback {
-    override suspend fun onRun(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
+    override suspend fun onAction(
+        context: Context,
+        glanceId: GlanceId,
+        parameters: ActionParameters
+    ) {
         if (updateEnabled) {
             updateEnabled = false
             NextCourseWidget().updateAll(context)
