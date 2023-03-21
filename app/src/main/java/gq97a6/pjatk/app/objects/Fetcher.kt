@@ -1,6 +1,7 @@
-package gq97a6.pjatk.app
+package gq97a6.pjatk.app.objects
 
-import gq97a6.pjatk.app.G.settings
+import gq97a6.pjatk.app.Course
+import gq97a6.pjatk.app.objects.G.settings
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeoutOrNull
 import org.jsoup.Connection
