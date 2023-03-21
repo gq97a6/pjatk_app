@@ -1,6 +1,8 @@
-package gq97a6.pjatk.app
+package gq97a6.pjatk.app.objects
 
-import gq97a6.pjatk.app.Storage.parseSave
+import gq97a6.pjatk.app.Settings
+import gq97a6.pjatk.app.objects.Storage.parseSave
+import gq97a6.pjatk.app.Timetable
 
 object G {
     var areInitialized = false

@@ -6,14 +6,11 @@ import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.glance.appwidget.updateAll
-import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.lifecycleScope
-import gq97a6.pjatk.app.G
-import gq97a6.pjatk.app.G.settings
-import gq97a6.pjatk.app.G.timetable
+import gq97a6.pjatk.app.objects.G
+import gq97a6.pjatk.app.objects.G.settings
 import gq97a6.pjatk.app.NextCourseWidget
-import gq97a6.pjatk.app.Storage.rootFolder
-import gq97a6.pjatk.app.Storage.saveToFile
+import gq97a6.pjatk.app.objects.Storage.rootFolder
 import gq97a6.pjatk.app.activities.fragments.FragmentManager
 import gq97a6.pjatk.app.activities.fragments.LoginFragment
 import gq97a6.pjatk.app.activities.fragments.TimetableFragment

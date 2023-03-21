@@ -3,6 +3,7 @@ package gq97a6.pjatk.app
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
@@ -21,14 +22,15 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
-import gq97a6.pjatk.app.G.settings
+import gq97a6.pjatk.app.objects.G.settings
 import gq97a6.pjatk.app.NextCourseWidget.Companion.updateEnabled
+import gq97a6.pjatk.app.objects.Fetcher
+import gq97a6.pjatk.app.objects.G
+import gq97a6.pjatk.app.objects.Storage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 import java.time.LocalDateTime
-import kotlin.random.Random
 
 class NextCourseWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = NextCourseWidget()
@@ -40,6 +42,7 @@ class NextCourseWidget : GlanceAppWidget() {
         var updateEnabled = true
     }
 
+    @Preview
     @Composable
     override fun Content() {
         Column(
@@ -86,7 +89,6 @@ class NextCourseWidget : GlanceAppWidget() {
 
                 Row(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalAlignment = Alignment.CenterVertically,
                     modifier = GlanceModifier
                         .background(Color(41, 41, 41))
                         .height(35.dp)
@@ -96,25 +98,27 @@ class NextCourseWidget : GlanceAppWidget() {
                         text = "UPDATE",
                         modifier = GlanceModifier
                             .width(200.dp)
+                            .fillMaxHeight()
+                            .padding(start = 50.dp, top = 7.dp)
                             .clickable(actionRunCallback<UpdateAction>()),
                         style = TextStyle(
                             color = ColorProvider(Color.White),
                             fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.End
+                            textAlign = TextAlign.Center
                         )
                     )
-
-                    Spacer(modifier = GlanceModifier.width(80.dp))
 
                     Text(
                         text = "REFRESH",
                         modifier = GlanceModifier
                             .width(200.dp)
+                            .fillMaxHeight()
+                            .padding(end = 50.dp, top = 7.dp)
                             .clickable(actionRunCallback<RefreshAction>()),
                         style = TextStyle(
                             color = ColorProvider(Color.White),
                             fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Start
+                            textAlign = TextAlign.Center
                         )
                     )
                 }
@@ -134,7 +138,11 @@ class NextCourseWidget : GlanceAppWidget() {
 }
 
 class RefreshAction : ActionCallback {
-    override suspend fun onRun(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
+    override suspend fun onAction(
+        context: Context,
+        glanceId: GlanceId,
+        parameters: ActionParameters
+    ) {
         context.apply {
             if (!G.areInitialized) {
                 Storage.rootFolder = filesDir.canonicalPath.toString()
@@ -146,26 +154,28 @@ class RefreshAction : ActionCallback {
 }
 
 class UpdateAction : ActionCallback {
-    override suspend fun onRun(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
-        if (updateEnabled) {
-            updateEnabled = false
-            NextCourseWidget().updateAll(context)
+    override suspend fun onAction(
+        context: Context,
+        glanceId: GlanceId,
+        parameters: ActionParameters
+    ) {
+        updateEnabled = false
+        NextCourseWidget().updateAll(context)
 
-            context.apply {
-                if (!G.areInitialized) {
-                    Storage.rootFolder = filesDir.canonicalPath.toString()
-                    G.initialize()
-                }
+        context.apply {
+            if (!G.areInitialized) {
+                Storage.rootFolder = filesDir.canonicalPath.toString()
+                G.initialize()
             }
+        }
 
-            CoroutineScope(Dispatchers.IO).launch {
-                Fetcher.fetch(settings.login, settings.pass) {
-                    if (it.first == null) createToast(context, it.second)
-                    else createToast(context, "Success")
+        CoroutineScope(Dispatchers.IO).launch {
+            Fetcher.fetch(settings.login, settings.pass) {
+                if (it.first == null) createToast(context, it.second)
+                else createToast(context, "Success")
 
-                    updateEnabled = true
-                    NextCourseWidget().updateAll(context)
-                }
+                updateEnabled = true
+                NextCourseWidget().updateAll(context)
             }
         }
     }

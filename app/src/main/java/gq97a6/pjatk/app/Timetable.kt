@@ -1,6 +1,6 @@
 package gq97a6.pjatk.app
 
-import gq97a6.pjatk.app.Storage.saveToFile
+import gq97a6.pjatk.app.objects.Storage.saveToFile
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
