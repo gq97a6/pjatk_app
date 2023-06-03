@@ -1,9 +1,7 @@
 package gq97a6.pjatk.app
 
 import android.content.Context
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
@@ -14,6 +12,7 @@ import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.action.actionRunCallback
+import androidx.glance.appwidget.provideContent
 import androidx.glance.appwidget.updateAll
 import androidx.glance.background
 import androidx.glance.layout.*
@@ -22,10 +21,10 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
-import gq97a6.pjatk.app.objects.G.settings
 import gq97a6.pjatk.app.NextCourseWidget.Companion.updateEnabled
 import gq97a6.pjatk.app.objects.Fetcher
 import gq97a6.pjatk.app.objects.G
+import gq97a6.pjatk.app.objects.G.settings
 import gq97a6.pjatk.app.objects.Storage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -42,95 +41,98 @@ class NextCourseWidget : GlanceAppWidget() {
         var updateEnabled = true
     }
 
-    @Preview
-    @Composable
-    override fun Content() {
-        Column(
-            verticalAlignment = Alignment.Vertical.Bottom,
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = GlanceModifier
-                .fillMaxSize()
-                .background(Color.Black)
-        ) {
-            if (updateEnabled) {
-                G.timetable.later(LocalDateTime.now()).take(3).forEach {
-                    it.apply {
-                        Row {
-                            Text(
-                                text = code,
-                                modifier = GlanceModifier.width(60.dp),
-                                style = TextStyle(color = ColorProvider(Color.White))
-                            )
-                            Text(
-                                text = room, modifier = GlanceModifier.width(100.dp),
-                                style = TextStyle(color = ColorProvider(Color.White))
-                            )
-                            Text(
-                                text = startIn,
-                                modifier = GlanceModifier.width(60.dp),
-                                style = TextStyle(
-                                    color = ColorProvider(Color.White),
-                                    textAlign = TextAlign.Center
+    override suspend fun provideGlance(context: Context, id: GlanceId) {
+        provideContent {
+            Column(
+                verticalAlignment = Alignment.Vertical.Bottom,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = GlanceModifier
+                    .fillMaxSize()
+                    .background(Color.Black)
+            ) {
+                if (updateEnabled) {
+                    G.timetable.later().take(3).forEach {
+                        it.apply {
+                            Row {
+                                Text(
+                                    text = code,
+                                    modifier = GlanceModifier.width(60.dp),
+                                    style = TextStyle(color = ColorProvider(Color.White))
                                 )
-                            )
-                            Text(
-                                text = endIn,
-                                modifier = GlanceModifier.width(60.dp),
-                                style = TextStyle(
-                                    color = ColorProvider(Color.White),
-                                    textAlign = TextAlign.End
+                                Text(
+                                    text = room, modifier = GlanceModifier.width(100.dp),
+                                    style = TextStyle(color = ColorProvider(Color.White))
                                 )
-                            )
+                                Text(
+                                    text = startIn,
+                                    modifier = GlanceModifier.width(60.dp),
+                                    style = TextStyle(
+                                        color = ColorProvider(Color.White),
+                                        textAlign = TextAlign.Center
+                                    )
+                                )
+                                Text(
+                                    text = endIn,
+                                    modifier = GlanceModifier.width(60.dp),
+                                    style = TextStyle(
+                                        color = ColorProvider(Color.White),
+                                        textAlign = TextAlign.End
+                                    )
+                                )
+                            }
                         }
                     }
-                }
 
-                Spacer(modifier = GlanceModifier.height(10.dp))
+                    Spacer(modifier = GlanceModifier.height(10.dp))
 
-                Row(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = GlanceModifier
-                        .background(Color(41, 41, 41))
-                        .height(35.dp)
-                        .fillMaxWidth()
-                ) {
-                    Text(
-                        text = "UPDATE",
+                    Row(
+                        horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = GlanceModifier
-                            .width(200.dp)
-                            .fillMaxHeight()
-                            .padding(start = 50.dp, top = 7.dp)
-                            .clickable(actionRunCallback<UpdateAction>()),
-                        style = TextStyle(
-                            color = ColorProvider(Color.White),
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center
+                            .background(Color(41, 41, 41))
+                            .height(35.dp)
+                            .fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "UPDATE",
+                            modifier = GlanceModifier
+                                .width(200.dp)
+                                .fillMaxHeight()
+                                .padding(start = 50.dp, top = 7.dp)
+                                .clickable(actionRunCallback<UpdateAction>()),
+                            style = TextStyle(
+                                color = ColorProvider(Color.White),
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center
+                            )
                         )
-                    )
 
-                    Text(
-                        text = "REFRESH",
-                        modifier = GlanceModifier
-                            .width(200.dp)
-                            .fillMaxHeight()
-                            .padding(end = 50.dp, top = 7.dp)
-                            .clickable(actionRunCallback<RefreshAction>()),
-                        style = TextStyle(
-                            color = ColorProvider(Color.White),
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center
+                        Text(
+                            text = "REFRESH",
+                            modifier = GlanceModifier
+                                .width(200.dp)
+                                .fillMaxHeight()
+                                .padding(end = 50.dp, top = 7.dp)
+                                .clickable(actionRunCallback<RefreshAction>()),
+                            style = TextStyle(
+                                color = ColorProvider(Color.White),
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center
+                            )
                         )
-                    )
-                }
-            } else {
-                Box(contentAlignment = Alignment.Center, modifier = GlanceModifier.fillMaxSize()) {
-                    Text(
-                        text = "Updating...",
-                        style = TextStyle(
-                            color = ColorProvider(Color.White),
-                            fontSize = 30.sp
+                    }
+                } else {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = GlanceModifier.fillMaxSize()
+                    ) {
+                        Text(
+                            text = "Updating...",
+                            style = TextStyle(
+                                color = ColorProvider(Color.White),
+                                fontSize = 30.sp
+                            )
                         )
-                    )
+                    }
                 }
             }
         }
