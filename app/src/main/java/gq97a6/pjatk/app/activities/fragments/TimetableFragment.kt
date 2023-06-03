@@ -1,9 +1,9 @@
 package gq97a6.pjatk.app.activities.fragments
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
@@ -30,40 +30,22 @@ import androidx.compose.ui.window.Dialog
 import androidx.fragment.app.Fragment
 import androidx.glance.appwidget.updateAll
 import gq97a6.pjatk.app.*
+import gq97a6.pjatk.app.R
+import gq97a6.pjatk.app.activities.MainActivity
+import gq97a6.pjatk.app.compose.*
+import gq97a6.pjatk.app.objects.Fetcher
 import gq97a6.pjatk.app.objects.G.settings
 import gq97a6.pjatk.app.objects.G.timetable
-import gq97a6.pjatk.app.R
 import gq97a6.pjatk.app.objects.Storage.saveToFile
-import gq97a6.pjatk.app.activities.MainActivity
-import gq97a6.pjatk.app.compose.BasicButton
-import gq97a6.pjatk.app.compose.Colors
-import gq97a6.pjatk.app.compose.NavShape
-import gq97a6.pjatk.app.compose.composeConstruct
-import gq97a6.pjatk.app.objects.Fetcher
-import gq97a6.pjatk.app.objects.G
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-/*
-aktualność danych
-
-ustawienia
-    wymagania aktualności danych
-    najbliższy dzień czy dzisiaj jako day view
-    default view
-
-widok tygodnia
-    dodatkowe info
-
-widok dzisiaj
-    dodatkowe info
-*/
-
 class TimetableFragment : Fragment() {
 
+    @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -71,7 +53,12 @@ class TimetableFragment : Fragment() {
     ) = composeConstruct(requireContext()) {
         val scaffoldState = rememberScaffoldState()
         var isLoading by remember { mutableStateOf(false) }
-        var courses by remember { mutableStateOf(timetable.day().groupBy { it.date }) }
+        var courses by remember {
+            mutableStateOf(
+                if (timetable.day().isNotEmpty()) timetable.day().groupBy { it.date }
+                else timetable.after().groupBy { it.date }
+            )
+        }
 
         Scaffold(
             modifier = Modifier.padding(10.dp),
@@ -80,9 +67,25 @@ class TimetableFragment : Fragment() {
             topBar = { TopBar() },
             bottomBar = {
                 BottomBar(
-                    { isLoading = !isLoading },
+                    {
+                        isLoading = !isLoading
+
+                        CoroutineScope(Dispatchers.IO).launch {
+                            Fetcher.fetch {
+                                if (it.first != null) {
+                                    timetable.update(it.first ?: listOf())
+                                    NextCourseWidget().updateAll(requireContext())
+                                } else createToast(requireContext(), it.second)
+                            }
+
+                            courses = if (timetable.day().isNotEmpty()) timetable.day().groupBy { it.date }
+                            else timetable.after().groupBy { it.date }
+
+                            isLoading = !isLoading
+                        }
+                    },
                     { courses = timetable.day().groupBy { it.date } },
-                    { courses = timetable.courses.groupBy { it.date } },
+                    { courses = timetable.after().groupBy { it.date } },
                     requireContext()
                 )
             },
@@ -96,16 +99,12 @@ class TimetableFragment : Fragment() {
 
         LoadingScreen(isLoading)
     }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-    }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun Content(courses: Map<LocalDate, List<Course>>) =
-    Box(contentAlignment = Alignment.Center) {
+    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxHeight()) {
         var course by remember { mutableStateOf(null as Course?) }
 
         LazyColumn(modifier = Modifier.fillMaxWidth()) {
@@ -119,6 +118,7 @@ private fun Content(courses: Map<LocalDate, List<Course>>) =
                         Text(
                             text = "${date.dzien()} ${date.format(DateTimeFormatter.ofPattern("dd.MM"))}",
                             fontSize = 30.sp,
+                            //fontWeight = if(date.compareTo(LocalDate.now()) == 2) FontWeight.Black else FontWeight.Normal,
                             color = Colors.secondary
                         )
                     }
@@ -146,6 +146,14 @@ private fun Content(courses: Map<LocalDate, List<Course>>) =
             }
         }
 
+        if (courses.isEmpty()) {
+            Text(
+                text = "brak danych",
+                fontSize = 30.sp,
+                color = pallet.accent.copy(0.2f)
+            )
+        }
+
         if (course != null) {
             val c = course ?: Course()
 
@@ -157,7 +165,12 @@ private fun Content(courses: Map<LocalDate, List<Course>>) =
                         .padding(20.dp),
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Text(text = c.name, fontSize = 25.sp, color = Colors.secondary, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = c.name,
+                        fontSize = 25.sp,
+                        color = Colors.secondary,
+                        fontWeight = FontWeight.Bold
+                    )
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(text = "Kod: ${c.code}", color = Colors.primary)
                     Text(text = "Typ: ${c.type}", color = Colors.primary)
@@ -221,9 +234,7 @@ private fun TopBar() = Row(
     }
 
     BasicButton(
-        onClick = {
-
-        },
+        onClick = { MainActivity.fm.replaceWith(SettingsFragment()) },
         contentPadding = PaddingValues(1.dp),
         border = BorderStroke(1.dp, Colors.primary),
         modifier = Modifier
@@ -249,20 +260,7 @@ private fun BottomBar(
         .background(Colors.background)
 ) {
     BasicButton(
-        onClick = {
-            getOnClick()
-
-            CoroutineScope(Dispatchers.IO).launch {
-                Fetcher.fetch {
-                    if (it.first != null) {
-                        G.timetable.update(it.first ?: listOf())
-                        NextCourseWidget().updateAll(context)
-                    } else createToast(context, it.second)
-                }
-
-                getOnClick()
-            }
-        },
+        onClick = { getOnClick() },
         contentPadding = PaddingValues(10.dp),
         border = BorderStroke(1.dp, Colors.primary),
         modifier = Modifier
@@ -275,8 +273,7 @@ private fun BottomBar(
         onClick = dayOnClick,
         contentPadding = PaddingValues(10.dp),
         border = BorderStroke(1.dp, Colors.primary),
-        modifier = Modifier
-            .height(50.dp)
+        modifier = Modifier.height(50.dp)
     ) {
         Text("DAY", fontSize = 15.sp, color = Colors.primary)
     }
