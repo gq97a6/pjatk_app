@@ -22,7 +22,7 @@ android {
         }
 
         debug {
-            debuggable true
+            debuggable false
         }
     }
 
