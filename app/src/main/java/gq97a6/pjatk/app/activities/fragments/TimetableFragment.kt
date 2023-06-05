@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -104,7 +105,7 @@ class TimetableFragment : Fragment() {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun Content(courses: Map<LocalDate, List<Course>>) =
-    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxHeight()) {
+    Box(modifier = Modifier.fillMaxHeight().fillMaxWidth()) {
         var course by remember { mutableStateOf(null as Course?) }
 
         LazyColumn(modifier = Modifier.fillMaxWidth()) {
@@ -150,7 +151,8 @@ private fun Content(courses: Map<LocalDate, List<Course>>) =
             Text(
                 text = "brak danych",
                 fontSize = 30.sp,
-                color = pallet.accent.copy(0.2f)
+                color = pallet.accent.copy(0.2f),
+                modifier = Modifier.align(Alignment.Center).padding(bottom = 150.dp)
             )
         }
 
