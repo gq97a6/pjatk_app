@@ -1,4 +1,4 @@
-package gq97a6.pjatk.app
+package gq97a6.pjatk.app.widget
 
 import android.content.Context
 import androidx.compose.ui.graphics.Color
@@ -9,19 +9,28 @@ import androidx.glance.GlanceModifier
 import androidx.glance.action.ActionParameters
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
-import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.provideContent
 import androidx.glance.appwidget.updateAll
 import androidx.glance.background
-import androidx.glance.layout.*
+import androidx.glance.layout.Alignment
+import androidx.glance.layout.Box
+import androidx.glance.layout.Column
+import androidx.glance.layout.Row
+import androidx.glance.layout.Spacer
+import androidx.glance.layout.fillMaxHeight
+import androidx.glance.layout.fillMaxSize
+import androidx.glance.layout.fillMaxWidth
+import androidx.glance.layout.height
+import androidx.glance.layout.padding
+import androidx.glance.layout.width
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
-import gq97a6.pjatk.app.NextCourseWidget.Companion.updateEnabled
+import gq97a6.pjatk.app.createToast
 import gq97a6.pjatk.app.objects.Fetcher
 import gq97a6.pjatk.app.objects.G
 import gq97a6.pjatk.app.objects.G.settings
@@ -29,11 +38,6 @@ import gq97a6.pjatk.app.objects.Storage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.time.LocalDateTime
-
-class NextCourseWidgetReceiver : GlanceAppWidgetReceiver() {
-    override val glanceAppWidget: GlanceAppWidget = NextCourseWidget()
-}
 
 class NextCourseWidget : GlanceAppWidget() {
 
@@ -137,47 +141,47 @@ class NextCourseWidget : GlanceAppWidget() {
             }
         }
     }
-}
 
-class RefreshAction : ActionCallback {
-    override suspend fun onAction(
-        context: Context,
-        glanceId: GlanceId,
-        parameters: ActionParameters
-    ) {
-        context.apply {
-            if (!G.areInitialized) {
-                Storage.rootFolder = filesDir.canonicalPath.toString()
-                G.initialize()
+    class RefreshAction : ActionCallback {
+        override suspend fun onAction(
+            context: Context,
+            glanceId: GlanceId,
+            parameters: ActionParameters
+        ) {
+            context.apply {
+                if (!G.areInitialized) {
+                    Storage.rootFolder = filesDir.canonicalPath.toString()
+                    G.initialize()
+                }
             }
+            NextCourseWidget().updateAll(context)
         }
-        NextCourseWidget().updateAll(context)
     }
-}
 
-class UpdateAction : ActionCallback {
-    override suspend fun onAction(
-        context: Context,
-        glanceId: GlanceId,
-        parameters: ActionParameters
-    ) {
-        updateEnabled = false
-        NextCourseWidget().updateAll(context)
+    class UpdateAction : ActionCallback {
+        override suspend fun onAction(
+            context: Context,
+            glanceId: GlanceId,
+            parameters: ActionParameters
+        ) {
+            updateEnabled = false
+            NextCourseWidget().updateAll(context)
 
-        context.apply {
-            if (!G.areInitialized) {
-                Storage.rootFolder = filesDir.canonicalPath.toString()
-                G.initialize()
+            context.apply {
+                if (!G.areInitialized) {
+                    Storage.rootFolder = filesDir.canonicalPath.toString()
+                    G.initialize()
+                }
             }
-        }
 
-        CoroutineScope(Dispatchers.IO).launch {
-            Fetcher.fetch(settings.login, settings.pass) {
-                if (it.first == null) createToast(context, it.second)
-                else createToast(context, "Success")
+            CoroutineScope(Dispatchers.IO).launch {
+                Fetcher.fetch(settings.login, settings.pass) {
+                    if (it.first == null) createToast(context, it.second)
+                    else createToast(context, "Success")
 
-                updateEnabled = true
-                NextCourseWidget().updateAll(context)
+                    updateEnabled = true
+                    NextCourseWidget().updateAll(context)
+                }
             }
         }
     }

@@ -9,7 +9,7 @@ import androidx.glance.appwidget.updateAll
 import androidx.lifecycle.lifecycleScope
 import gq97a6.pjatk.app.objects.G
 import gq97a6.pjatk.app.objects.G.settings
-import gq97a6.pjatk.app.NextCourseWidget
+import gq97a6.pjatk.app.widget.NextCourseWidget
 import gq97a6.pjatk.app.objects.Storage.rootFolder
 import gq97a6.pjatk.app.activities.fragments.FragmentManager
 import gq97a6.pjatk.app.activities.fragments.LoginFragment

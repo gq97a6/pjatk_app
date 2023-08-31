@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace 'gq97a6.pjatk.app'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "gq97a6.pjatk.app"
         minSdk 26
-        targetSdk 33
+        targetSdk 34
         versionCode 1
         versionName "1.3.0 | stable" //stable or beta
     }
@@ -54,11 +54,11 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.9.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.5.3'
-    implementation 'androidx.navigation:navigation-ui-ktx:2.5.3'
-    implementation 'androidx.compose.ui:ui:1.4.3'
-    implementation 'androidx.compose.foundation:foundation:1.4.3'
-    implementation 'androidx.compose.material:material:1.4.3'
-    implementation 'androidx.glance:glance-appwidget:1.0.0-beta01'
-    implementation 'androidx.compose.ui:ui-tooling-preview:1.4.3'
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.7.1'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.7.1'
+    implementation 'androidx.compose.ui:ui:1.5.0'
+    implementation 'androidx.compose.foundation:foundation:1.5.0'
+    implementation 'androidx.compose.material:material:1.5.0'
+    implementation 'androidx.glance:glance-appwidget:1.0.0-rc01'
+    implementation 'androidx.compose.ui:ui-tooling-preview:1.5.0'
 }

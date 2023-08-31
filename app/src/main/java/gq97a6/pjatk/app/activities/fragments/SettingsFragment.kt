@@ -86,7 +86,7 @@ class SettingsFragment : Fragment() {
                                     .height(40.dp)
                                     .width(40.dp)
                             ) {
-                                Text("-", fontSize = 20.sp, color = Colors.primary)
+                                Text("-", fontSize = 25.sp, color = Colors.primary)
                             }
                         }
 
