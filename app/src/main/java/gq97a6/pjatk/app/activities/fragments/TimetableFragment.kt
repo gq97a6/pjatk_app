@@ -24,7 +24,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -38,6 +37,7 @@ import gq97a6.pjatk.app.objects.Fetcher
 import gq97a6.pjatk.app.objects.G.settings
 import gq97a6.pjatk.app.objects.G.timetable
 import gq97a6.pjatk.app.objects.Storage.saveToFile
+import gq97a6.pjatk.app.widget.NextCourseWidget
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -151,7 +151,7 @@ private fun Content(courses: Map<LocalDate, List<Course>>) =
 
         if (courses.isEmpty()) {
             Text(
-                text = "brak danych",
+                text = "no data",
                 fontSize = 30.sp,
                 color = pallet.accent.copy(0.2f),
                 modifier = Modifier.align(Alignment.Center).padding(bottom = 150.dp)

@@ -31,7 +31,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.Fragment
 import androidx.glance.appwidget.updateAll
-import gq97a6.pjatk.app.*
 import gq97a6.pjatk.app.objects.G.settings
 import gq97a6.pjatk.app.objects.G.timetable
 import gq97a6.pjatk.app.R
@@ -39,6 +38,7 @@ import gq97a6.pjatk.app.objects.Storage.saveToFile
 import gq97a6.pjatk.app.activities.MainActivity.Companion.fm
 import gq97a6.pjatk.app.compose.*
 import gq97a6.pjatk.app.objects.Fetcher
+import gq97a6.pjatk.app.widget.NextCourseWidget
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
